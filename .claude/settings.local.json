@@ -5,7 +5,8 @@
       "Bash(npm run dev)",
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
-      "Bash(VITE_API_URL=http://localhost:5000 npm run dev:*)"
+      "Bash(VITE_API_URL=http://localhost:5000 npm run dev:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []
