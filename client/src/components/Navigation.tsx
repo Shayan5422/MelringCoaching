@@ -36,7 +36,7 @@ export function Navigation() {
     { label: "Services", id: "services" },
     { label: "Tarifs", id: "pricing" },
     { label: "Team-Building", id: "team-building" },
-    { label: "Planning", id: "booking" },
+    { label: "Planning", id: "enhanced-booking" },
     { label: "Contact", id: "contact" },
   ];
 

@@ -19,7 +19,6 @@ export default function Home() {
       <PricingSection />
       <TeamBuildingSection />
       <EnhancedBookingSection />
-      <BookingSection />
       <ContactSection />
       <Footer />
     </div>
