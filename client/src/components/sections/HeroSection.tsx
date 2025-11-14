@@ -61,7 +61,7 @@ export function HeroSection() {
             size="lg"
             variant="outline"
             className="border-2 border-white text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 font-display font-bold text-base px-8 py-6 rounded-sm transition-all duration-300 hover:scale-105"
-            onClick={() => scrollToSection("booking")}
+            onClick={() => scrollToSection("enhanced-booking")}
             data-testid="button-schedule"
           >
             Voir le planning
