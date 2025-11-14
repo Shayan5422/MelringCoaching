@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Clock, User, Mail, Phone, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, Clock, User, Mail, Phone, Check, X, ChevronLeft, ChevronRight, Repeat } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -57,16 +57,42 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
 
   
-  // Fetch available slots for the selected date
+  // Fetch all slots (availability + recurring) for the selected date
   const { data: slots = [], isLoading, refetch } = useQuery({
-    queryKey: ["availability-slots", selectedDateStr, selectedCourseType],
+    queryKey: ["all-slots", selectedDateStr, selectedCourseType],
     queryFn: async () => {
-      const response = await apiRequest("GET", `/api/availability-slots/${selectedDateStr}`);
-      const allSlots = await response.json();
+      // Get availability slots for the selected date
+      const availabilityResponse = await apiRequest("GET", `/api/availability-slots/${selectedDateStr}`);
+      const availabilitySlots = await availabilityResponse.json();
+
+      // Get recurring slots (active ones)
+      const recurringResponse = await apiRequest("GET", "/api/recurring-slots");
+      const recurringSlots = await recurringResponse.json();
+
+      // Format recurring slots to look like availability slots
+      const formattedRecurringSlots = recurringSlots
+        .filter((slot: any) => slot.isActive === "true")
+        .map((slot: any) => ({
+          id: slot.id,
+          date: selectedDateStr, // Use current selected date
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          description: slot.description,
+          isActive: slot.isActive,
+          maxBookings: slot.maxBookings,
+          availableSpots: parseInt(slot.maxBookings), // Assume all spots available for recurring
+          totalSpots: parseInt(slot.maxBookings),
+          isAvailable: true,
+          isRecurring: true, // Flag to identify recurring slots
+          dayOfWeek: slot.dayOfWeek
+        }));
+
+      // Combine both types of slots
+      const allSlots = [...availabilitySlots, ...formattedRecurringSlots];
 
       // Filter slots by selected course type
       if (selectedCourseType) {
-        return allSlots.filter((slot: AvailabilitySlot) =>
+        return allSlots.filter((slot: any) =>
           slot.description && slot.description.toLowerCase().includes(selectedCourseType.toLowerCase())
         );
       }
@@ -410,14 +436,22 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                         <CardHeader className="pb-3">
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1">
-                              {slot.description && (
-                                <Badge
-                                  variant={getCourseVariant(slot.description)}
-                                  className="mb-2 text-xs font-medium"
-                                >
-                                  {slot.description}
-                                </Badge>
-                              )}
+                              <div className="flex items-center gap-2 mb-2">
+                                {slot.isRecurring && (
+                                  <div className="flex items-center gap-1 bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    <Repeat className="w-3 h-3" />
+                                    Récurrent
+                                  </div>
+                                )}
+                                {slot.description && (
+                                  <Badge
+                                    variant={getCourseVariant(slot.description)}
+                                    className="text-xs font-medium"
+                                  >
+                                    {slot.description}
+                                  </Badge>
+                                )}
+                              </div>
                               <div className="flex items-center gap-2">
                                 <Clock className="w-5 h-5 text-primary" />
                                 <CardTitle className="font-display text-lg">
