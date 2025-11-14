@@ -63,18 +63,17 @@ export default async (req: any, res: any) => {
     // Skip seeding in production - database should already be set up
     console.log("Skipping data seeding in production");
 
-      app.use((err: any, _req: any, res: any, _next: any) => {
-        console.error("Global error handler:", err);
-        const status = err.status || err.statusCode || 500;
-        const message = process.env.NODE_ENV === "development"
-          ? err.message || "Internal Server Error"
-          : "Internal Server Error";
-        res.status(status).json({
-          message,
-          ...(process.env.NODE_ENV === "development" && { stack: err.stack })
-        });
+    app.use((err: any, _req: any, res: any, _next: any) => {
+      console.error("Global error handler:", err);
+      const status = err.status || err.statusCode || 500;
+      const message = process.env.NODE_ENV === "development"
+        ? err.message || "Internal Server Error"
+        : "Internal Server Error";
+      res.status(status).json({
+        message,
+        ...(process.env.NODE_ENV === "development" && { stack: err.stack })
       });
-    }
+    });
 
     return app(req, res);
   } catch (error) {
