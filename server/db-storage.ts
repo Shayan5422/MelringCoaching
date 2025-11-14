@@ -1,4 +1,5 @@
 import { eq, and, gte, lte } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
 import {
   type Contact,
   type InsertContact,
@@ -47,6 +48,10 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  constructor() {
+    console.log("DatabaseStorage initialized successfully");
+  }
+
   // Contact methods
   async createContact(insertContact: InsertContact): Promise<Contact> {
     const [contact] = await db
@@ -68,7 +73,7 @@ export class DatabaseStorage implements IStorage {
     const [booking] = await db
       .insert(contactSubmissions)
       .values({
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name: "Booking Request",
         email: insertBooking.email,
         message: `Simple booking request: ${JSON.stringify(insertBooking)}`
@@ -90,7 +95,7 @@ export class DatabaseStorage implements IStorage {
       .insert(availabilitySlots)
       .values({
         ...insertSlot,
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         isActive: insertSlot.isActive || "true",
         maxBookings: insertSlot.maxBookings?.toString() || "1",
         createdAt: new Date(),
@@ -146,7 +151,7 @@ export class DatabaseStorage implements IStorage {
       .insert(bookings)
       .values({
         ...insertBooking,
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         status: "pending",
         customerPhone: insertBooking.customerPhone || undefined,
         notes: insertBooking.notes || undefined,
@@ -194,7 +199,7 @@ export class DatabaseStorage implements IStorage {
       .insert(recurringSlots)
       .values({
         ...insertSlot,
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         dayOfWeek: insertSlot.dayOfWeek.toString(),
         maxBookings: insertSlot.maxBookings?.toString() || "1",
         description: insertSlot.description || undefined,

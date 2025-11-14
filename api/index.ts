@@ -60,16 +60,8 @@ export default async (req: any, res: any) => {
       console.log("Registering routes...");
       await registerRoutes(app);
 
-      // Seed initial data if needed
-      if (process.env.NODE_ENV === "development" || process.env.SEED_DATA === "true") {
-        try {
-          console.log("Seeding initial data...");
-          await seedInitialData();
-          console.log("Initial data seeded successfully");
-        } catch (error) {
-          console.error("Error seeding initial data:", error);
-        }
-      }
+      // Skip seeding in production - database should already be set up
+      console.log("Skipping data seeding in production");
 
       app.use((err: any, _req: any, res: any, _next: any) => {
         console.error("Global error handler:", err);
