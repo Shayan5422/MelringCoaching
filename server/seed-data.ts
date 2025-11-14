@@ -1,4 +1,4 @@
-import { DatabaseStorage } from "./db-storage";
+import { DatabaseStorage } from "./db-storage.js";
 
 const storage = new DatabaseStorage();
 

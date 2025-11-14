@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { DatabaseStorage } from "./db-storage";
+import { DatabaseStorage } from "./db-storage.js";
 
 const storage = new DatabaseStorage();
 import {

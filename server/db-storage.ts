@@ -12,7 +12,7 @@ import {
   type RecurringSlot,
   type InsertRecurringSlot
 } from "../shared/schema.js";
-import { db } from "./db";
+import { db } from "./db.js";
 import {
   contactSubmissions,
   availabilitySlots,
