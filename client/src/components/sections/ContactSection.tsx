@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Phone, Instagram } from "lucide-react";
+import { Mail, Phone, Instagram, MapPin } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
@@ -180,6 +180,16 @@ export function ContactSection() {
                   <div>
                     <p className="font-body text-white/60 text-sm">Téléphone</p>
                     <p className="font-body text-white" data-testid="text-phone">06 72 91 26 89</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-primary/20 rounded-md flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-body text-white/60 text-sm">Adresse</p>
+                    <p className="font-body text-white" data-testid="text-address">8 Allée des Fileuses, 59260 Lille - Hellemmes</p>
                   </div>
                 </div>
 
