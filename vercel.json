@@ -24,14 +24,5 @@
     }
   ],
   "installCommand": "npm install",
-  "buildCommand": "npm run build",
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "POSTGRES_URL": "@postgres_url",
-    "POSTGRES_URL_NON_POOLING": "@postgres_url_non_pooling",
-    "SUPABASE_URL": "@supabase_url",
-    "SUPABASE_ANON_KEY": "@supabase_anon_key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
-    "SUPABASE_JWT_SECRET": "@supabase_jwt_secret"
-  }
+  "buildCommand": "npm run build"
 }
