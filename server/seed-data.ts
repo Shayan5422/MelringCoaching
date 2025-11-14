@@ -1,4 +1,6 @@
-import { storage } from "./storage";
+import { DatabaseStorage } from "./db-storage";
+
+const storage = new DatabaseStorage();
 
 export async function seedRecurringSlots() {
   console.log("Seeding recurring slots...");

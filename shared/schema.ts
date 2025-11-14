@@ -77,6 +77,7 @@ export const insertAvailabilitySlotSchema = createInsertSchema(availabilitySlots
   startTime: true,
   endTime: true,
   description: true,
+  isActive: true,
   maxBookings: true,
   recurringId: true,
 }).extend({
@@ -84,6 +85,7 @@ export const insertAvailabilitySlotSchema = createInsertSchema(availabilitySlots
   startTime: z.string().regex(/^\d{2}:\d{2}$/, "Format d'heure invalide (HH:mm)"),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, "Format d'heure invalide (HH:mm)"),
   description: z.string().optional(),
+  isActive: z.enum(["true", "false"]).optional(),
   maxBookings: z.string().transform(Number).pipe(z.number().min(1)), // Accept string, transform to number
   recurringId: z.string().optional(),
 });
