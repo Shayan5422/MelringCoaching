@@ -48,11 +48,25 @@ Before deploying to Vercel, you must set up the following environment variables 
 
 ### Troubleshooting:
 
-If deployment fails:
+#### If deployment fails:
 1. Check that all environment variables are correctly set in Vercel dashboard
 2. Ensure variable names match exactly (including case)
 3. Wait a few minutes for environment variables to propagate
 4. Trigger a new deployment from Vercel dashboard if needed
+
+#### If you get 500 errors on API endpoints:
+1. **Check the health endpoint**: Visit `https://your-domain.vercel.app/api/health`
+2. **Check Vercel function logs**: Go to your Vercel dashboard → Functions → View logs
+3. **Common issues**:
+   - Environment variables not properly set
+   - Database connection timeout
+   - SSL certificate verification failure
+
+#### Debugging Steps:
+1. Visit the health endpoint to see detailed error messages
+2. Check the Vercel function logs for specific error details
+3. Ensure all 7 environment variables are set correctly
+4. Wait 2-3 minutes after setting environment variables before redeploying
 
 ---
 

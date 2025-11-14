@@ -48,25 +48,48 @@ app.use((req, res, next) => {
 });
 
 export default async (req: any, res: any) => {
-  // Register routes once
-  if (!app._router) {
-    await registerRoutes(app);
+  try {
+    console.log("Environment check:", {
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+      hasPostgresUrl: !!process.env.POSTGRES_URL,
+      nodeEnv: process.env.NODE_ENV
+    });
 
-    // Seed initial data if needed
-    if (process.env.NODE_ENV === "development" || process.env.SEED_DATA === "true") {
-      try {
-        await seedInitialData();
-      } catch (error) {
-        console.error("Error seeding initial data:", error);
+    // Register routes once
+    if (!app._router) {
+      console.log("Registering routes...");
+      await registerRoutes(app);
+
+      // Seed initial data if needed
+      if (process.env.NODE_ENV === "development" || process.env.SEED_DATA === "true") {
+        try {
+          console.log("Seeding initial data...");
+          await seedInitialData();
+          console.log("Initial data seeded successfully");
+        } catch (error) {
+          console.error("Error seeding initial data:", error);
+        }
       }
+
+      app.use((err: any, _req: any, res: any, _next: any) => {
+        console.error("Global error handler:", err);
+        const status = err.status || err.statusCode || 500;
+        const message = process.env.NODE_ENV === "development"
+          ? err.message || "Internal Server Error"
+          : "Internal Server Error";
+        res.status(status).json({
+          message,
+          ...(process.env.NODE_ENV === "development" && { stack: err.stack })
+        });
+      });
     }
 
-    app.use((err: any, _req: any, res: any, _next: any) => {
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      res.status(status).json({ message });
+    return app(req, res);
+  } catch (error) {
+    console.error("Serverless function error:", error);
+    return res.status(500).json({
+      message: "Server initialization failed",
+      ...(process.env.NODE_ENV === "development" && { error: error.message })
     });
   }
-
-  return app(req, res);
 };

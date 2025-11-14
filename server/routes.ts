@@ -13,6 +13,28 @@ import {
 import { fromZodError } from "zod-validation-error";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint
+  app.get("/api/health", async (req, res) => {
+    try {
+      // Test database connection
+      await storage.getAllContacts();
+      res.json({
+        status: "ok",
+        message: "Database connection successful",
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV
+      });
+    } catch (error) {
+      console.error("Health check failed:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Database connection failed",
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   app.post("/api/contact", async (req, res) => {
     try {
       const validatedData = insertContactSchema.parse(req.body);
