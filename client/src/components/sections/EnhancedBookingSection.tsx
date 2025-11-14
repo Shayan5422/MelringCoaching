@@ -41,6 +41,7 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date(date));
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [selectedCourseType, setSelectedCourseType] = useState<string>("");
 
   const form = useForm<InsertBookingSlot>({
     resolver: zodResolver(insertBookingSlotSchema),
@@ -67,10 +68,19 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
 
   // Fetch available slots for the selected date
   const { data: slots = [], isLoading, refetch } = useQuery({
-    queryKey: ["availability-slots", selectedDateStr],
+    queryKey: ["availability-slots", selectedDateStr, selectedCourseType],
     queryFn: async () => {
       const response = await apiRequest("GET", `/api/availability-slots/${selectedDateStr}`);
-      return response.json();
+      const allSlots = await response.json();
+
+      // Filter slots by selected course type
+      if (selectedCourseType) {
+        return allSlots.filter((slot: AvailabilitySlot) =>
+          slot.description && slot.description.toLowerCase().includes(selectedCourseType.toLowerCase())
+        );
+      }
+
+      return allSlots;
     },
   });
 
@@ -175,9 +185,10 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
   };
 
   // Helper functions for recurring slots
-  const formatDayOfWeek = (dayOfWeek: number) => {
+  const formatDayOfWeek = (dayOfWeek: string | number) => {
     const days = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
-    return days[dayOfWeek];
+    const dayIndex = typeof dayOfWeek === "string" ? parseInt(dayOfWeek) : dayOfWeek;
+    return days[dayIndex];
   };
 
   const getRecurringCourseColor = (description: string) => {
@@ -240,7 +251,7 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
               {recurringSlots
                 .filter((slot: RecurringSlot) => slot.isActive === "true")
-                .sort((a: RecurringSlot, b: RecurringSlot) => a.dayOfWeek - b.dayOfWeek)
+                .sort((a: RecurringSlot, b: RecurringSlot) => parseInt(a.dayOfWeek) - parseInt(b.dayOfWeek))
                 .map((slot: RecurringSlot, index: number) => (
                   <motion.div
                     key={slot.id}
@@ -353,30 +364,76 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                 </div>
 
                 {/* Quick Date Selection */}
-                <div className="flex items-center justify-center gap-2 mt-4">
-                  <span className="text-sm text-[#1D1D1B]/60">Accès rapide:</span>
-                  <div className="flex gap-2">
-                    {["Aujourd'hui", "Demain", "Après-demain"].map((label, index) => {
-                      const targetDate = addDays(new Date(), index);
-                      return (
+                <div className="flex flex-col items-center gap-3 mt-4">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-sm text-[#1D1D1B]/60">Accès rapide:</span>
+                    <div className="flex gap-2">
+                      {["Aujourd'hui", "Demain", "Après-demain"].map((label, index) => {
+                        const targetDate = addDays(new Date(), index);
+                        return (
+                          <Button
+                            key={label}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedDate(targetDate)}
+                            className={`text-xs px-3 py-1 ${
+                              format(selectedDate, "yyyy-MM-dd") === format(targetDate, "yyyy-MM-dd")
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "border-[#1D1D1B]/20 hover:border-primary"
+                            }`}
+                          >
+                            {label}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Course Type Filters */}
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-sm text-[#1D1D1B]/60">Type de séance:</span>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedCourseType("")}
+                        className={`text-xs px-3 py-1 ${
+                          selectedCourseType === ""
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "border-[#1D1D1B]/20 hover:border-primary"
+                        }`}
+                      >
+                        Tous
+                      </Button>
+                      {["Open Ring", "Boxe Femme", "Boxe Mixte", "HIIT Mixte", "HIIT Femme"].map((courseType) => (
                         <Button
-                          key={label}
+                          key={courseType}
                           variant="outline"
                           size="sm"
-                          onClick={() => setSelectedDate(targetDate)}
-                          className={`text-xs px-3 py-1 ${
-                            format(selectedDate, "yyyy-MM-dd") === format(targetDate, "yyyy-MM-dd")
+                          onClick={() => setSelectedCourseType(courseType)}
+                          className={`text-xs px-3 py-1 flex items-center gap-1 ${
+                            selectedCourseType === courseType
                               ? "bg-primary text-primary-foreground border-primary"
                               : "border-[#1D1D1B]/20 hover:border-primary"
                           }`}
                         >
-                          {label}
+                          <div className={`w-2 h-2 rounded-full ${getCourseColor(courseType)}`}></div>
+                          {courseType}
                         </Button>
-                      );
-                    })}
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Filter Status */}
+              {selectedCourseType && (
+                <div className="text-center mb-4">
+                  <Badge variant="secondary" className="text-sm">
+                    {selectedCourseType} - {slots.length} créneau(x) trouvé(s)
+                  </Badge>
+                </div>
+              )}
 
               {/* Available Slots Grid */}
               {isLoading ? (
@@ -396,14 +453,29 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                   <CardContent>
                     <X className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="font-display font-semibold text-xl text-[#1D1D1B] mb-2">
-                      Aucune disponibilité
+                      {selectedCourseType ? "Aucune disponibilité pour ce type de séance" : "Aucune disponibilité"}
                     </h3>
                     <p className="font-body text-[#1D1D1B]/60 mb-6">
-                      Il n'y a pas de créneaux disponibles pour cette date.
+                      {selectedCourseType
+                        ? `Il n'y a pas de créneaux disponibles pour la séance "${selectedCourseType}" à cette date.`
+                        : "Il n'y a pas de créneaux disponibles pour cette date."
+                      }
                     </p>
-                    <p className="font-body text-[#1D1D1B]/50 text-sm">
-                      Veuillez réessayer avec une autre date ou nous contacter directement.
+                    <p className="font-body text-[#1D1D1B]/50 text-sm mb-4">
+                      {selectedCourseType
+                        ? "Essayez un autre type de séance ou une autre date."
+                        : "Veuillez réessayer avec une autre date ou nous contacter directement."
+                      }
                     </p>
+                    {selectedCourseType && (
+                      <Button
+                        variant="outline"
+                        onClick={() => setSelectedCourseType("")}
+                        className="text-sm"
+                      >
+                        Afficher tous les créneaux
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               ) : (
