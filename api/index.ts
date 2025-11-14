@@ -81,7 +81,7 @@ export default async (req: any, res: any) => {
     console.error("Serverless function error:", error);
     return res.status(500).json({
       message: "Server initialization failed",
-      ...(process.env.NODE_ENV === "development" && { error: error.message })
+      ...(process.env.NODE_ENV === "development" && { error: error instanceof Error ? error.message : "Unknown error" })
     });
   }
 };
