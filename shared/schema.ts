@@ -86,7 +86,7 @@ export const insertAvailabilitySlotSchema = createInsertSchema(availabilitySlots
   endTime: z.string().regex(/^\d{2}:\d{2}$/, "Format d'heure invalide (HH:mm)"),
   description: z.string().optional(),
   isActive: z.enum(["true", "false"]).optional(),
-  maxBookings: z.string().transform(Number).pipe(z.number().min(1)), // Accept string, transform to number
+  maxBookings: z.union([z.string(), z.number()]).transform((val) => typeof val === 'number' ? val : parseInt(val, 10)).pipe(z.number().min(1)), // Accept string or number, transform to number
   recurringId: z.string().optional(),
 });
 
@@ -112,11 +112,11 @@ export const insertRecurringSlotSchema = createInsertSchema(recurringSlots).pick
   validFrom: true,
   validUntil: true,
 }).extend({
-  dayOfWeek: z.string().transform(Number).pipe(z.number().min(0).max(6)), // 0-6 (Sunday=0)
+  dayOfWeek: z.union([z.string(), z.number()]).transform((val) => typeof val === 'number' ? val : parseInt(val, 10)).pipe(z.number().min(0).max(6)), // 0-6 (Sunday=0)
   startTime: z.string().regex(/^\d{2}:\d{2}$/, "Format d'heure invalide (HH:mm)"),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, "Format d'heure invalide (HH:mm)"),
   description: z.string().optional(),
-  maxBookings: z.string().transform(Number).pipe(z.number().min(1)),
+  maxBookings: z.union([z.string(), z.number()]).transform((val) => typeof val === 'number' ? val : parseInt(val, 10)).pipe(z.number().min(1)),
   validFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format de date invalide (YYYY-MM-DD)"),
   validUntil: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format de date invalide (YYYY-MM-DD)").optional(),
 });
