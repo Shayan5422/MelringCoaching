@@ -9,7 +9,7 @@ import {
   type InsertBookingSlot,
   type RecurringSlot,
   type InsertRecurringSlot
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { randomUUID } from "crypto";
 
 export interface IStorage {

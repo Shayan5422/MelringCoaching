@@ -1,6 +1,6 @@
 import express from "express";
-import { registerRoutes } from "../server/routes";
-import { seedInitialData } from "../server/seed-data";
+import { registerRoutes } from "../server/routes.js";
+import { seedInitialData } from "../server/seed-data.js";
 
 const app = express();
 

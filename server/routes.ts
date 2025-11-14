@@ -9,7 +9,7 @@ import {
   insertAvailabilitySlotSchema,
   insertBookingSlotSchema,
   insertRecurringSlotSchema
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { fromZodError } from "zod-validation-error";
 
 export async function registerRoutes(app: Express): Promise<Server> {

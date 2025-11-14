@@ -11,14 +11,14 @@ import {
   type InsertBookingSlot,
   type RecurringSlot,
   type InsertRecurringSlot
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { db } from "./db";
 import {
   contactSubmissions,
   availabilitySlots,
   recurringSlots,
   bookings
-} from "@shared/schema";
+} from "../shared/schema.js";
 
 export interface IStorage {
   createContact(contact: InsertContact): Promise<Contact>;
