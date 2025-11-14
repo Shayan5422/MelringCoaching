@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Clock, User, Mail, Phone, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, Clock, User, Mail, Phone, Check, X, ChevronLeft, ChevronRight, Repeat, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -11,6 +11,7 @@ import {
   insertBookingSlotSchema,
   type InsertBookingSlot,
   type AvailabilitySlot,
+  type RecurringSlot,
 } from "@shared/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,6 +55,15 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
 
   // Format selected date as string for API
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+
+  // Fetch recurring slots
+  const { data: recurringSlots = [], isLoading: isLoadingRecurring } = useQuery({
+    queryKey: ["recurring-slots"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/recurring-slots");
+      return response.json();
+    },
+  });
 
   // Fetch available slots for the selected date
   const { data: slots = [], isLoading, refetch } = useQuery({
@@ -164,6 +174,25 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
     return "default";
   };
 
+  // Helper functions for recurring slots
+  const formatDayOfWeek = (dayOfWeek: number) => {
+    const days = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+    return days[dayOfWeek];
+  };
+
+  const getRecurringCourseColor = (description: string) => {
+    if (!description) return "bg-gray-500";
+
+    const lowerDesc = description.toLowerCase();
+    if (lowerDesc.includes("open ring")) return "bg-blue-500";
+    if (lowerDesc.includes("boxe femme")) return "bg-pink-500";
+    if (lowerDesc.includes("boxe mixte")) return "bg-purple-500";
+    if (lowerDesc.includes("hiit mixte")) return "bg-orange-500";
+    if (lowerDesc.includes("hiit femme")) return "bg-red-500";
+
+    return "bg-gray-500";
+  };
+
   return (
     <section id="enhanced-booking" className="py-16 md:py-24 bg-gradient-to-br from-primary/5 to-secondary/5">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -176,6 +205,91 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
           <p className="font-body text-lg text-[#1D1D1B]/70 max-w-2xl mx-auto mb-8">
             Choisissez le créneau qui vous convient le mieux parmi nos disponibilités
           </p>
+        </div>
+
+        {/* Recurring Slots Section */}
+        <div className="mb-12">
+          <div className="flex items-center gap-2 mb-6">
+            <Repeat className="w-6 h-6 text-primary" />
+            <h3 className="font-display font-bold text-xl text-[#1D1D1B]">
+              Créneaux récurrents configurés
+            </h3>
+          </div>
+
+          {isLoadingRecurring ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-white rounded-lg p-4 border border-gray-200 animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded mb-2 w-20"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2 w-24"></div>
+                  <div className="h-3 bg-gray-200 rounded w-16"></div>
+                </div>
+              ))}
+            </div>
+          ) : recurringSlots.length === 0 ? (
+            <div className="bg-white/50 rounded-lg p-6 text-center border border-gray-200">
+              <Settings className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+              <p className="text-[#1D1D1B]/60 font-medium">
+                Aucun créneau récurrent configuré
+              </p>
+              <p className="text-[#1D1D1B]/40 text-sm mt-1">
+                Les créneaux récurrents apparaîtront ici une fois configurés
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              {recurringSlots
+                .filter((slot: RecurringSlot) => slot.isActive === "true")
+                .sort((a: RecurringSlot, b: RecurringSlot) => a.dayOfWeek - b.dayOfWeek)
+                .map((slot: RecurringSlot, index: number) => (
+                  <motion.div
+                    key={slot.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className="bg-white rounded-lg p-4 border border-gray-200 hover:border-primary/30 hover:shadow-md transition-all duration-200"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={`w-3 h-3 rounded-full ${getRecurringCourseColor(slot.description || '')}`}></div>
+                          <span className="font-display font-semibold text-[#1D1D1B]">
+                            {formatDayOfWeek(slot.dayOfWeek)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-[#1D1D1B]/70 mb-1">
+                          <Clock className="w-4 h-4" />
+                          <span>
+                            {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                          </span>
+                        </div>
+                        {slot.description && (
+                          <Badge variant="outline" className="text-xs">
+                            {slot.description}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <Badge variant="secondary" className="text-xs">
+                          {slot.maxBookings} place(s)
+                        </Badge>
+                        <Badge variant="default" className="text-xs bg-green-100 text-green-800 border-green-200">
+                          Actif
+                        </Badge>
+                      </div>
+                    </div>
+                    {slot.validFrom && (
+                      <div className="mt-2 pt-2 border-t border-gray-100">
+                        <p className="text-xs text-[#1D1D1B]/50">
+                          Du {new Date(slot.validFrom).toLocaleDateString('fr-FR')}
+                          {slot.validUntil && ` au ${new Date(slot.validUntil).toLocaleDateString('fr-FR')}`}
+                        </p>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+            </div>
+          )}
         </div>
 
         <AnimatePresence mode="wait">
