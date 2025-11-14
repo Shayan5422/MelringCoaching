@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Clock, User, Mail, Phone, Check, X } from "lucide-react";
+import { Calendar, Clock, User, Mail, Phone, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -24,7 +24,9 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format, addDays, subDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -36,6 +38,8 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
   const { toast } = useToast();
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date(date));
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const form = useForm<InsertBookingSlot>({
     resolver: zodResolver(insertBookingSlotSchema),
@@ -48,14 +52,33 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
     },
   });
 
+  // Format selected date as string for API
+  const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+
   // Fetch available slots for the selected date
   const { data: slots = [], isLoading, refetch } = useQuery({
-    queryKey: ["availability-slots", date],
+    queryKey: ["availability-slots", selectedDateStr],
     queryFn: async () => {
-      const response = await apiRequest("GET", `/api/availability-slots/${date}`);
+      const response = await apiRequest("GET", `/api/availability-slots/${selectedDateStr}`);
       return response.json();
     },
   });
+
+  // Date navigation functions
+  const handlePreviousDay = () => {
+    setSelectedDate(prev => subDays(prev, 1));
+  };
+
+  const handleNextDay = () => {
+    setSelectedDate(prev => addDays(prev, 1));
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(date);
+      setIsCalendarOpen(false);
+    }
+  };
 
   const bookingMutation = useMutation({
     mutationFn: async (data: InsertBookingSlot) => {
@@ -164,13 +187,80 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Date Display */}
+              {/* Date Navigation */}
               <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 px-6 py-3 bg-white rounded-full shadow-md border border-[#1D1D1B]/10">
-                  <Calendar className="w-5 h-5 text-primary" />
-                  <span className="font-display font-semibold text-lg">
-                    {format(new Date(date), "EEEE d MMMM yyyy", { locale: fr })}
-                  </span>
+                <div className="inline-flex items-center gap-4 bg-white rounded-full shadow-md border border-[#1D1D1B]/10 px-6 py-3">
+                  {/* Previous Day Button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handlePreviousDay}
+                    className="p-1 hover:bg-primary/10 rounded-full"
+                    aria-label="Jour précédent"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+
+                  {/* Date Picker */}
+                  <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-primary/10 rounded-full transition-colors"
+                      >
+                        <Calendar className="w-5 h-5 text-primary" />
+                        <span className="font-display font-semibold text-lg">
+                          {format(selectedDate, "EEEE d MMMM yyyy", { locale: fr })}
+                        </span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={handleDateSelect}
+                        initialFocus
+                        locale={fr}
+                        className="rounded-md border"
+                      />
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Next Day Button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleNextDay}
+                    className="p-1 hover:bg-primary/10 rounded-full"
+                    aria-label="Jour suivant"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {/* Quick Date Selection */}
+                <div className="flex items-center justify-center gap-2 mt-4">
+                  <span className="text-sm text-[#1D1D1B]/60">Accès rapide:</span>
+                  <div className="flex gap-2">
+                    {["Aujourd'hui", "Demain", "Après-demain"].map((label, index) => {
+                      const targetDate = addDays(new Date(), index);
+                      return (
+                        <Button
+                          key={label}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedDate(targetDate)}
+                          className={`text-xs px-3 py-1 ${
+                            format(selectedDate, "yyyy-MM-dd") === format(targetDate, "yyyy-MM-dd")
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "border-[#1D1D1B]/20 hover:border-primary"
+                          }`}
+                        >
+                          {label}
+                        </Button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
