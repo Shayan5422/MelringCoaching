@@ -14,6 +14,9 @@ import {
   type InsertAvailabilitySlot,
   type AvailabilitySlot,
   type BookingSlot,
+  insertRecurringSlotSchema,
+  type InsertRecurringSlot,
+  type RecurringSlot,
 } from "@shared/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +28,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
@@ -40,11 +50,194 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+// RecurringSlotForm component
+function RecurringSlotForm({
+  onSubmit,
+  isLoading
+}: {
+  onSubmit: (data: InsertRecurringSlot) => void;
+  isLoading: boolean;
+}) {
+  const form = useForm<InsertRecurringSlot>({
+    resolver: zodResolver(insertRecurringSlotSchema),
+    defaultValues: {
+      dayOfWeek: 1, // Monday
+      startTime: "",
+      endTime: "",
+      description: "none",
+      maxBookings: 10,
+      validFrom: format(new Date(), "yyyy-MM-dd"),
+      validUntil: "",
+    },
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <FormField
+          control={form.control}
+          name="dayOfWeek"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Jour de la semaine</FormLabel>
+              <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value.toString()}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un jour" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="1">Lundi</SelectItem>
+                  <SelectItem value="2">Mardi</SelectItem>
+                  <SelectItem value="3">Mercredi</SelectItem>
+                  <SelectItem value="4">Jeudi</SelectItem>
+                  <SelectItem value="5">Vendredi</SelectItem>
+                  <SelectItem value="6">Samedi</SelectItem>
+                  <SelectItem value="0">Dimanche</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="startTime"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Heure de début</FormLabel>
+              <FormControl>
+                <Input
+                  type="time"
+                  {...field}
+                  placeholder="18:45"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="endTime"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Heure de fin</FormLabel>
+              <FormControl>
+                <Input
+                  type="time"
+                  {...field}
+                  placeholder="20:00"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Type de cours</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="none">Aucun</SelectItem>
+                  <SelectItem value="Open Ring">Open Ring</SelectItem>
+                  <SelectItem value="Boxe Femme">Boxe Femme</SelectItem>
+                  <SelectItem value="Boxe Mixte">Boxe Mixte</SelectItem>
+                  <SelectItem value="HIIT Mixte">HIIT Mixte</SelectItem>
+                  <SelectItem value="HIIT Femme">HIIT Femme</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="maxBookings"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Places max</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  min="1"
+                  max="20"
+                  {...field}
+                  onChange={(e) => field.onChange(parseInt(e.target.value))}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="validFrom"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Date de début</FormLabel>
+              <FormControl>
+                <Input
+                  type="date"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="validUntil"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Date de fin (optionnel)</FormLabel>
+              <FormControl>
+                <Input
+                  type="date"
+                  {...field}
+                  placeholder="Laisser vide pour aucune fin"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="md:col-span-3">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full"
+          >
+            {isLoading ? "Création en cours..." : "Créer le créneau récurrent"}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
+
 export function AdminBookingManager() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [editingSlot, setEditingSlot] = useState<AvailabilitySlot | null>(null);
+  const [editingRecurringSlot, setEditingRecurringSlot] = useState<RecurringSlot | null>(null);
 
   // Fetch all availability slots
   const { data: slots = [], isLoading: loadingSlots } = useQuery({
@@ -60,6 +253,15 @@ export function AdminBookingManager() {
     queryKey: ["all-booking-slots"],
     queryFn: async () => {
       const response = await apiRequest("GET", "/api/booking-slots");
+      return response.json();
+    },
+  });
+
+  // Fetch all recurring slots
+  const { data: recurringSlots = [], isLoading: loadingRecurringSlots } = useQuery({
+    queryKey: ["all-recurring-slots"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/recurring-slots");
       return response.json();
     },
   });
@@ -156,6 +358,70 @@ export function AdminBookingManager() {
     },
   });
 
+  // Mutations for recurring slots
+  const createRecurringSlotMutation = useMutation({
+    mutationFn: async (data: InsertRecurringSlot) => {
+      return apiRequest("POST", "/api/recurring-slots", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Créneau récurrent ajouté",
+        description: "Le créneau récurrent a été créé avec succès.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["all-recurring-slots"] });
+      queryClient.invalidateQueries({ queryKey: ["all-availability-slots"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Une erreur est survenue",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateRecurringSlotMutation = useMutation({
+    mutationFn: async ({ id, ...data }: Partial<RecurringSlot> & { id: string }) => {
+      return apiRequest("PUT", `/api/recurring-slots/${id}`, data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Créneau récurrent mis à jour",
+        description: "Le créneau récurrent a été modifié avec succès.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["all-recurring-slots"] });
+      queryClient.invalidateQueries({ queryKey: ["all-availability-slots"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Une erreur est survenue",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteRecurringSlotMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return apiRequest("DELETE", `/api/recurring-slots/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Créneau récurrent supprimé",
+        description: "Le créneau récurrent a été supprimé avec succès.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["all-recurring-slots"] });
+      queryClient.invalidateQueries({ queryKey: ["all-availability-slots"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message || "Une erreur est survenue",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: InsertAvailabilitySlot) => {
     createSlotMutation.mutate(data);
   };
@@ -182,6 +448,11 @@ export function AdminBookingManager() {
 
   const handleUpdateBookingStatus = (bookingId: string, status: string) => {
     updateBookingMutation.mutate({ id: bookingId, status });
+  };
+
+  // Handlers for recurring slots
+  const handleDeleteRecurringSlot = (id: string) => {
+    deleteRecurringSlotMutation.mutate(id);
   };
 
   const formatTime = (time: string) => {
@@ -211,6 +482,11 @@ export function AdminBookingManager() {
     }
   };
 
+  const getDayOfWeekText = (dayOfWeek: string) => {
+    const days = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+    return days[parseInt(dayOfWeek)] || dayOfWeek;
+  };
+
   const sortedSlots = slots.sort((a: AvailabilitySlot, b: AvailabilitySlot) => {
     const dateCompare = new Date(a.date).getTime() - new Date(b.date).getTime();
     if (dateCompare !== 0) return dateCompare;
@@ -234,8 +510,9 @@ export function AdminBookingManager() {
         </div>
 
         <Tabs defaultValue="availability" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="availability">Disponibilités</TabsTrigger>
+            <TabsTrigger value="recurring">Créneaux Récurrents</TabsTrigger>
             <TabsTrigger value="bookings">Réservations</TabsTrigger>
           </TabsList>
 
@@ -419,6 +696,107 @@ export function AdminBookingManager() {
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="recurring" className="space-y-6">
+            {/* Add Recurring Slot Form */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plus className="w-5 h-5" />
+                  Créer un créneau récurrent
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-[#1D1D1B]/60 mb-4">
+                  Configurez des créneaux qui se répètent chaque semaine. Par exemple, "tous les lundis à 18h45".
+                </p>
+
+                <RecurringSlotForm
+                  onSubmit={(data) => {
+                    const processedData = {
+                      ...data,
+                      description: data.description === "none" ? "" : data.description
+                    };
+                    createRecurringSlotMutation.mutate(processedData);
+                  }}
+                  isLoading={createRecurringSlotMutation.isPending}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Recurring Slots List */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Créneaux récurrents configurés
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingRecurringSlots ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="p-4 border rounded-lg animate-pulse">
+                        <div className="h-4 bg-gray-200 rounded mb-2 w-32"></div>
+                        <div className="h-3 bg-gray-200 rounded mb-1 w-24"></div>
+                        <div className="h-3 bg-gray-200 rounded w-20"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : recurringSlots.length === 0 ? (
+                  <div className="text-center py-8 text-[#1D1D1B]/60">
+                    Aucun créneau récurrent configuré
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <AnimatePresence>
+                      {recurringSlots.map((slot: RecurringSlot, index: number) => (
+                        <motion.div
+                          key={slot.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 20 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                        >
+                          <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                            <div className="flex-1">
+                              <div className="font-semibold text-[#1D1D1B]">
+                                {getDayOfWeekText(slot.dayOfWeek)}
+                              </div>
+                              <div className="text-sm text-[#1D1D1B]/70">
+                                {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                              </div>
+                              {slot.description && (
+                                <div className="text-sm text-[#1D1D1B]/60 mt-1">
+                                  {slot.description}
+                                </div>
+                              )}
+                              <div className="text-xs text-[#1D1D1B]/50 mt-1">
+                                Valide du {slot.validFrom} {slot.validUntil && `au ${slot.validUntil}`}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant={slot.isActive === "true" ? "default" : "secondary"}>
+                                {slot.isActive === "true" ? "Actif" : "Inactif"}
+                              </Badge>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeleteRecurringSlot(slot.id)}
+                                className="text-red-600 border-red-200 hover:bg-red-50"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
                             </div>
                           </div>
                         </motion.div>

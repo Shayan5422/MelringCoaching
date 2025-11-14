@@ -5,7 +5,8 @@ import {
   insertContactSchema,
   insertBookingSchema,
   insertAvailabilitySlotSchema,
-  insertBookingSlotSchema
+  insertBookingSlotSchema,
+  insertRecurringSlotSchema
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 
@@ -189,6 +190,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Error updating booking slot:", error);
         res.status(500).json({ error: "Internal server error" });
       }
+    }
+  });
+
+  // Recurring slots routes
+  app.get("/api/recurring-slots", async (req, res) => {
+    try {
+      const recurringSlots = await storage.getAllRecurringSlots();
+      res.json(recurringSlots);
+    } catch (error) {
+      console.error("Error fetching recurring slots:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/recurring-slots", async (req, res) => {
+    try {
+      const validatedData = insertRecurringSlotSchema.parse(req.body);
+      const recurringSlot = await storage.createRecurringSlot(validatedData);
+
+      // Generate availability slots from this recurring slot
+      await storage.generateAvailabilitySlotsFromRecurring();
+
+      res.json(recurringSlot);
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        const validationError = fromZodError(error);
+        res.status(400).json({ error: validationError.message });
+      } else {
+        console.error("Error creating recurring slot:", error);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    }
+  });
+
+  app.put("/api/recurring-slots/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const recurringSlot = await storage.updateRecurringSlot(id, req.body);
+
+      // Regenerate availability slots when a recurring slot is updated
+      await storage.generateAvailabilitySlotsFromRecurring();
+
+      res.json(recurringSlot);
+    } catch (error: any) {
+      if (error.message === "Recurring slot not found") {
+        res.status(404).json({ error: "Créneau récurrent non trouvé" });
+      } else {
+        console.error("Error updating recurring slot:", error);
+        res.status(500).json({ error: "Internal server error" });
+      }
+    }
+  });
+
+  app.delete("/api/recurring-slots/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteRecurringSlot(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting recurring slot:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/recurring-slots/generate", async (req, res) => {
+    try {
+      await storage.generateAvailabilitySlotsFromRecurring();
+      res.json({ message: "Availability slots generated successfully" });
+    } catch (error) {
+      console.error("Error generating availability slots:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 

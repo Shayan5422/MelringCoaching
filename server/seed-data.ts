@@ -1,5 +1,106 @@
 import { storage } from "./storage";
 
+export async function seedRecurringSlots() {
+  console.log("Seeding recurring slots...");
+
+  // Weekly schedule for recurring slots
+  const weeklyRecurringSchedule = [
+    // LUNDI (Monday = 1)
+    {
+      dayOfWeek: 1,
+      slots: [
+        { startTime: "18:45", endTime: "20:00", maxBookings: 8, description: "Open Ring" },
+        { startTime: "20:15", endTime: "21:15", maxBookings: 10, description: "Boxe Femme" }
+      ]
+    },
+    // MARDI (Tuesday = 2)
+    {
+      dayOfWeek: 2,
+      slots: [
+        { startTime: "14:00", endTime: "17:00", maxBookings: 12, description: "Open Ring" },
+        { startTime: "18:00", endTime: "18:45", maxBookings: 10, description: "HIIT Mixte" },
+        { startTime: "19:00", endTime: "20:00", maxBookings: 10, description: "Boxe Femme" },
+        { startTime: "20:15", endTime: "21:15", maxBookings: 12, description: "Boxe Mixte" }
+      ]
+    },
+    // MERCREDI (Wednesday = 3)
+    {
+      dayOfWeek: 3,
+      slots: [
+        { startTime: "12:15", endTime: "13:00", maxBookings: 10, description: "HIIT Mixte" },
+        { startTime: "14:00", endTime: "17:00", maxBookings: 12, description: "Open Ring" },
+        { startTime: "18:00", endTime: "18:45", maxBookings: 8, description: "HIIT Femme" },
+        { startTime: "19:00", endTime: "20:00", maxBookings: 12, description: "Boxe Mixte" },
+        { startTime: "20:15", endTime: "21:15", maxBookings: 10, description: "Boxe Femme" }
+      ]
+    },
+    // JEUDI (Thursday = 4)
+    {
+      dayOfWeek: 4,
+      slots: [
+        { startTime: "09:30", endTime: "10:30", maxBookings: 8, description: "Boxe Mixte" },
+        { startTime: "12:15", endTime: "13:00", maxBookings: 8, description: "HIIT Femme" },
+        { startTime: "14:00", endTime: "17:00", maxBookings: 12, description: "Open Ring" },
+        { startTime: "18:00", endTime: "18:45", maxBookings: 10, description: "HIIT Mixte" },
+        { startTime: "18:45", endTime: "20:00", maxBookings: 12, description: "Open Ring" },
+        { startTime: "20:15", endTime: "21:15", maxBookings: 10, description: "Boxe Femme" }
+      ]
+    },
+    // VENDREDI (Friday = 5)
+    {
+      dayOfWeek: 5,
+      slots: [
+        { startTime: "09:30", endTime: "10:30", maxBookings: 8, description: "Boxe Femme" },
+        { startTime: "12:15", endTime: "13:00", maxBookings: 10, description: "HIIT Mixte" },
+        { startTime: "18:00", endTime: "18:45", maxBookings: 8, description: "HIIT Femme" }
+      ]
+    },
+    // SAMEDI (Saturday = 6)
+    {
+      dayOfWeek: 6,
+      slots: [
+        { startTime: "10:00", endTime: "12:00", maxBookings: 15, description: "Open Ring" },
+        { startTime: "12:15", endTime: "13:00", maxBookings: 8, description: "HIIT Femme" },
+        { startTime: "13:30", endTime: "14:30", maxBookings: 10, description: "Boxe Mixte" }
+      ]
+    },
+    // DIMANCHE (Sunday = 0)
+    {
+      dayOfWeek: 0,
+      slots: [
+        { startTime: "11:00", endTime: "12:00", maxBookings: 8, description: "Boxe Mixte" },
+        { startTime: "12:15", endTime: "13:00", maxBookings: 10, description: "HIIT Mixte" },
+        { startTime: "13:30", endTime: "14:30", maxBookings: 8, description: "Boxe Femme" },
+        { startTime: "15:00", endTime: "17:00", maxBookings: 15, description: "Open Ring" }
+      ]
+    }
+  ];
+
+  // Create recurring slots
+  for (const daySchedule of weeklyRecurringSchedule) {
+    for (const slot of daySchedule.slots) {
+      const recurringSlotData = {
+        dayOfWeek: daySchedule.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        description: slot.description,
+        maxBookings: slot.maxBookings,
+        validFrom: new Date().toISOString().split('T')[0], // Start from today
+        validUntil: "", // No end date
+      };
+
+      try {
+        await storage.createRecurringSlot(recurringSlotData);
+        console.log(`Created recurring slot: Day ${daySchedule.dayOfWeek} ${slot.startTime}-${slot.endTime} (${slot.description})`);
+      } catch (error) {
+        console.error("Error creating recurring slot:", error);
+      }
+    }
+  }
+
+  console.log("Recurring slots seeded successfully!");
+}
+
 export async function seedInitialData() {
   console.log("Seeding initial data...");
 
@@ -119,4 +220,8 @@ export async function seedInitialData() {
   }
 
   console.log("Initial data seeded successfully!");
+
+  // Seed recurring slots and generate availability from them
+  await seedRecurringSlots();
+  await storage.generateAvailabilitySlotsFromRecurring();
 }

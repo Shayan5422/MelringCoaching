@@ -6,7 +6,9 @@ import {
   type AvailabilitySlot,
   type InsertAvailabilitySlot,
   type BookingSlot,
-  type InsertBookingSlot
+  type InsertBookingSlot,
+  type RecurringSlot,
+  type InsertRecurringSlot
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -23,6 +25,13 @@ export interface IStorage {
   updateAvailabilitySlot(id: string, updates: Partial<AvailabilitySlot>): Promise<AvailabilitySlot>;
   deleteAvailabilitySlot(id: string): Promise<void>;
 
+  // Recurring slots
+  createRecurringSlot(slot: InsertRecurringSlot): Promise<RecurringSlot>;
+  getAllRecurringSlots(): Promise<RecurringSlot[]>;
+  updateRecurringSlot(id: string, updates: Partial<RecurringSlot>): Promise<RecurringSlot>;
+  deleteRecurringSlot(id: string): Promise<void>;
+  generateAvailabilitySlotsFromRecurring(): Promise<void>;
+
   // Booking slots
   createBookingSlot(booking: InsertBookingSlot): Promise<BookingSlot>;
   getAllBookingSlots(): Promise<BookingSlot[]>;
@@ -35,12 +44,14 @@ export class MemStorage implements IStorage {
   private bookings: Map<string, Booking>;
   private availabilitySlots: Map<string, AvailabilitySlot>;
   private bookingSlots: Map<string, BookingSlot>;
+  private recurringSlots: Map<string, RecurringSlot>;
 
   constructor() {
     this.contacts = new Map();
     this.bookings = new Map();
     this.availabilitySlots = new Map();
     this.bookingSlots = new Map();
+    this.recurringSlots = new Map();
   }
 
   async createContact(insertContact: InsertContact): Promise<Contact> {
@@ -87,6 +98,7 @@ export class MemStorage implements IStorage {
       isActive: "true",
       description: insertSlot.description || null,
       maxBookings: insertSlot.maxBookings.toString(),
+      recurringId: insertSlot.recurringId || null,
       createdAt: now,
       updatedAt: now,
     };
@@ -165,6 +177,101 @@ export class MemStorage implements IStorage {
     };
     this.bookingSlots.set(id, updatedBooking);
     return updatedBooking;
+  }
+
+  // Recurring slots methods
+  async createRecurringSlot(insertSlot: InsertRecurringSlot): Promise<RecurringSlot> {
+    const id = randomUUID();
+    const now = new Date();
+    const slot: RecurringSlot = {
+      ...insertSlot,
+      id,
+      dayOfWeek: insertSlot.dayOfWeek.toString(),
+      maxBookings: insertSlot.maxBookings.toString(),
+      description: insertSlot.description || null,
+      validUntil: insertSlot.validUntil || null,
+      isActive: "true",
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.recurringSlots.set(id, slot);
+    return slot;
+  }
+
+  async getAllRecurringSlots(): Promise<RecurringSlot[]> {
+    return Array.from(this.recurringSlots.values()).sort(
+      (a, b) => parseInt(a.dayOfWeek) - parseInt(b.dayOfWeek)
+    );
+  }
+
+  async updateRecurringSlot(id: string, updates: Partial<RecurringSlot>): Promise<RecurringSlot> {
+    const slot = this.recurringSlots.get(id);
+    if (!slot) {
+      throw new Error("Recurring slot not found");
+    }
+    const updatedSlot: RecurringSlot = {
+      ...slot,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.recurringSlots.set(id, updatedSlot);
+    return updatedSlot;
+  }
+
+  async deleteRecurringSlot(id: string): Promise<void> {
+    this.recurringSlots.delete(id);
+    // Also delete all availability slots generated from this recurring slot
+    Array.from(this.availabilitySlots.entries()).forEach(([slotId, availabilitySlot]) => {
+      if (availabilitySlot.recurringId === id) {
+        this.availabilitySlots.delete(slotId);
+      }
+    });
+  }
+
+  async generateAvailabilitySlotsFromRecurring(): Promise<void> {
+    const today = new Date();
+    const validUntil = new Date(today);
+    validUntil.setDate(validUntil.getDate() + 14); // Generate slots for next 14 days
+
+    Array.from(this.recurringSlots.values()).forEach(recurringSlot => {
+      if (recurringSlot.isActive !== "true") return;
+
+      const validFrom = new Date(recurringSlot.validFrom);
+      const slotValidUntil = recurringSlot.validUntil ? new Date(recurringSlot.validUntil) : validUntil;
+
+      // Generate slots from validFrom to min(validUntil, slotValidUntil)
+      const endDate = new Date(Math.min(validUntil.getTime(), slotValidUntil.getTime()));
+
+      for (let date = new Date(validFrom); date <= endDate; date.setDate(date.getDate() + 1)) {
+        if (date.getDay() === parseInt(recurringSlot.dayOfWeek)) {
+          const dateStr = date.toISOString().split('T')[0];
+
+          // Check if slot already exists
+          const existingSlot = Array.from(this.availabilitySlots.values()).find(
+            slot => slot.date === dateStr &&
+                   slot.startTime === recurringSlot.startTime &&
+                   slot.endTime === recurringSlot.endTime &&
+                   slot.recurringId === recurringSlot.id
+          );
+
+          if (!existingSlot) {
+            const availabilitySlot: AvailabilitySlot = {
+              id: randomUUID(),
+              date: dateStr,
+              startTime: recurringSlot.startTime,
+              endTime: recurringSlot.endTime,
+              description: recurringSlot.description,
+              isActive: recurringSlot.isActive,
+              maxBookings: recurringSlot.maxBookings,
+              recurringId: recurringSlot.id,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
+            this.availabilitySlots.set(availabilitySlot.id, availabilitySlot);
+          }
+        }
+      }
+    });
   }
 }
 
