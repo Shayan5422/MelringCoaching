@@ -69,9 +69,16 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
       const recurringResponse = await apiRequest("GET", "/api/recurring-slots");
       const recurringSlots = await recurringResponse.json();
 
+      // Get current day of week (0 = Sunday, 1 = Monday, etc.)
+      const currentDayOfWeek = new Date(selectedDateStr).getDay();
+
       // Format recurring slots to look like availability slots
       const formattedRecurringSlots = recurringSlots
-        .filter((slot: any) => slot.isActive === "true")
+        .filter((slot: any) => {
+          // Only show recurring slots that match the current day of week
+          const slotDayOfWeek = parseInt(slot.dayOfWeek);
+          return slot.isActive === "true" && slotDayOfWeek === currentDayOfWeek;
+        })
         .map((slot: any) => ({
           id: slot.id,
           date: selectedDateStr, // Use current selected date
@@ -199,6 +206,12 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
     if (lowerDesc.includes("hiit femme")) return "destructive";
 
     return "default";
+  };
+
+  // Helper function to get French day name
+  const getDayName = (dayIndex: number) => {
+    const days = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+    return days[dayIndex];
   };
 
   
