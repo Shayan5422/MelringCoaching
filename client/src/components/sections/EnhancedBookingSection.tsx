@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Clock, User, Mail, Phone, Check, X, ChevronLeft, ChevronRight, Repeat } from "lucide-react";
+import { Calendar, Clock, User, Mail, Phone, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -451,12 +451,6 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
-                                {slot.isRecurring && (
-                                  <div className="flex items-center gap-1 bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
-                                    <Repeat className="w-3 h-3" />
-                                    Récurrent
-                                  </div>
-                                )}
                                 {slot.description && (
                                   <Badge
                                     variant={getCourseVariant(slot.description)}
