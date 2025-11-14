@@ -72,32 +72,13 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
       // Get current day of week (0 = Sunday, 1 = Monday, etc.)
       const currentDayOfWeek = new Date(selectedDateStr).getDay();
 
-      // Debug: log current day and available recurring slots
-      console.log("Debug info:", {
-        selectedDate: selectedDateStr,
-        currentDayOfWeek,
-        allRecurringSlots: recurringSlots,
-        activeRecurringSlots: recurringSlots.filter((s: any) => s.isActive === "true")
-      });
-
       // Format recurring slots to look like availability slots
       const formattedRecurringSlots = recurringSlots
         .filter((slot: any) => {
           // Only show recurring slots that match the current day of week
           const slotDayOfWeek = parseInt(slot.dayOfWeek);
           const matchesDay = slotDayOfWeek === currentDayOfWeek;
-          const isActive = slot.isActive === "true";
-
-          console.log("Slot check:", {
-            slotId: slot.id,
-            slotDayOfWeek,
-            isActive,
-            matchesDay,
-            currentDayOfWeek,
-            willShow: isActive && matchesDay
-          });
-
-          return isActive && matchesDay;
+          return slot.isActive === "true" && matchesDay;
         })
         .map((slot: any) => ({
           id: slot.id,
