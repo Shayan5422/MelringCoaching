@@ -55,13 +55,13 @@ export default async (req: any, res: any) => {
       nodeEnv: process.env.NODE_ENV
     });
 
-    // Register routes once
-    if (!app._router) {
-      console.log("Registering routes...");
-      await registerRoutes(app);
+    // Register routes once - always register in serverless to ensure routes are available
+    console.log("Registering routes...");
+    await registerRoutes(app);
+    console.log("Routes registered successfully");
 
-      // Skip seeding in production - database should already be set up
-      console.log("Skipping data seeding in production");
+    // Skip seeding in production - database should already be set up
+    console.log("Skipping data seeding in production");
 
       app.use((err: any, _req: any, res: any, _next: any) => {
         console.error("Global error handler:", err);
