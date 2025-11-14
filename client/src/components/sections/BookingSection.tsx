@@ -63,7 +63,7 @@ export function BookingSection() {
             Accès au Planning
           </h2>
           <p className="font-body text-lg text-[#1D1D1B]/70 max-w-2xl mx-auto mb-8" data-testid="text-booking-description">
-            Réservez vos séances facilement via Bookyway. Partagez-nous votre adresse email pour recevoir votre lien de connexion personnalisé.
+            Partagez-nous votre adresse email pour recevoir votre lien de connexion personnalisé.
           </p>
         </div>
 
@@ -100,7 +100,7 @@ export function BookingSection() {
                       Demande d'accès au planning
                     </h3>
                     <p className="font-body text-sm text-[#1D1D1B]/60">
-                      Via Bookyway
+                      
                     </p>
                   </div>
                 </div>
