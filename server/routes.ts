@@ -29,7 +29,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         status: "error",
         message: "Database connection failed",
-        error: error.message,
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString()
       });
     }
