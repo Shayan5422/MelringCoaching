@@ -288,6 +288,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin authentication endpoint
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { password } = req.body;
+
+      // Simple password check - in production, use proper authentication
+      if (password === "admin123") {
+        res.json({ success: true, message: "Authentication successful" });
+      } else {
+        res.status(401).json({ success: false, message: "Invalid password" });
+      }
+    } catch (error) {
+      console.error("Error in admin login:", error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
