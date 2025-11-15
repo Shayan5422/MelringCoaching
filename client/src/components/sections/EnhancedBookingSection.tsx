@@ -242,7 +242,7 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
             >
               {/* Date Navigation */}
               <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-4 bg-white rounded-full shadow-md border border-[#1D1D1B]/10 px-6 py-3">
+                <div className="inline-flex items-center gap-2 sm:gap-4 bg-white rounded-full shadow-md border border-[#1D1D1B]/10 px-3 sm:px-6 py-3 max-w-full">
                   {/* Previous Day Button */}
                   <Button
                     variant="ghost"
@@ -259,15 +259,20 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                     <PopoverTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="flex items-center gap-2 px-4 py-2 hover:bg-primary/10 rounded-full transition-colors"
+                        className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 hover:bg-primary/10 rounded-full transition-colors min-w-0 flex-1"
                       >
-                        <Calendar className="w-5 h-5 text-primary" />
-                        <span className="font-display font-semibold text-lg">
-                          {format(selectedDate, "EEEE d MMMM yyyy", { locale: fr })}
+                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                        <span className="font-display font-semibold text-sm sm:text-lg truncate">
+                          <span className="hidden sm:inline">
+                            {format(selectedDate, "EEEE d MMMM yyyy", { locale: fr })}
+                          </span>
+                          <span className="sm:hidden">
+                            {format(selectedDate, "d MMM", { locale: fr })}
+                          </span>
                         </span>
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0" align="center">
                       <CalendarComponent
                         mode="single"
                         selected={selectedDate}
