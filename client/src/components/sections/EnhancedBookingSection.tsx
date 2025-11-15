@@ -365,7 +365,7 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
 
               {/* Available Slots Grid */}
               {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
                     <Card key={i} className="animate-pulse">
                       <CardContent className="p-6">
@@ -432,7 +432,7 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {slots.map((slot: any, index: number) => (
                     <motion.div
                       key={slot.id}
@@ -526,7 +526,7 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                 <CardContent>
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         <FormField
                           control={form.control}
                           name="customerName"

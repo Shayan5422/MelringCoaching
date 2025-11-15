@@ -25,7 +25,7 @@ export function PricingSection() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12">
           <div className="bg-white/5 border-2 border-primary/30 rounded-md overflow-hidden hover-elevate active-elevate-2 transition-all duration-300" data-testid="card-pricing-group">
             <div className="bg-primary p-4">
               <h3 className="font-display font-bold text-xl text-primary-foreground text-center" data-testid="heading-pricing-group">

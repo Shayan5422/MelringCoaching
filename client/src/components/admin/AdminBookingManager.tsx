@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Plus, Edit2, Trash2, Users, CheckCircle, XCircle } from "lucide-react";
+import { Calendar, Plus, Edit2, Trash2, Users, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -73,7 +72,7 @@ function RecurringSlotForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <FormField
           control={form.control}
           name="dayOfWeek"
@@ -498,22 +497,22 @@ export function AdminBookingManager() {
   );
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="font-display font-extrabold text-3xl text-[#1D1D1B] mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-[#1D1D1B] mb-2">
             Gestion des Réservations
           </h1>
-          <p className="font-body text-[#1D1D1B]/70">
+          <p className="font-body text-[#1D1D1B]/70 text-sm sm:text-base">
             Gérez vos disponibilités et suivez les réservations
           </p>
         </div>
 
         <Tabs defaultValue="availability" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="availability">Disponibilités</TabsTrigger>
-            <TabsTrigger value="recurring">Créneaux Récurrents</TabsTrigger>
-            <TabsTrigger value="bookings">Réservations</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto sm:h-10">
+            <TabsTrigger value="availability" className="text-xs sm:text-sm py-3 sm:py-2">Disponibilités</TabsTrigger>
+            <TabsTrigger value="recurring" className="text-xs sm:text-sm py-3 sm:py-2">Créneaux Récurrents</TabsTrigger>
+            <TabsTrigger value="bookings" className="text-xs sm:text-sm py-3 sm:py-2">Réservations</TabsTrigger>
           </TabsList>
 
           <TabsContent value="availability" className="space-y-6">
@@ -528,7 +527,7 @@ export function AdminBookingManager() {
               <CardContent>
                 <Form {...form}>
                   <form onSubmit={editingSlot ? form.handleSubmit(handleUpdateSlot) : form.handleSubmit(onSubmit)}
-                        className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <FormField
                       control={form.control}
                       name="date"
@@ -647,40 +646,42 @@ export function AdminBookingManager() {
                           exit={{ opacity: 0, x: 20 }}
                           transition={{ duration: 0.3, delay: index * 0.05 }}
                         >
-                          <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                            <div className="flex items-center gap-4">
-                              <div>
-                                <div className="font-semibold">
-                                  {format(new Date(slot.date), "EEEE d MMMM yyyy", { locale: fr })}
+                          <div className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                                <div className="flex-1">
+                                  <div className="font-semibold text-sm sm:text-base">
+                                    {format(new Date(slot.date), "EEEE d MMMM yyyy", { locale: fr })}
+                                  </div>
+                                  <div className="text-xs sm:text-sm text-[#1D1D1B]/70">
+                                    {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                                  </div>
                                 </div>
-                                <div className="text-sm text-[#1D1D1B]/70">
-                                  {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                                <div className="flex items-center gap-2">
+                                  <Users className="w-4 h-4 text-[#1D1D1B]/60" />
+                                  <span className="text-xs sm:text-sm">
+                                    {getBookingCountForSlot(slot.id)}/{parseInt(slot.maxBookings)}
+                                  </span>
                                 </div>
+                                <Badge variant={slot.isActive === "true" ? "default" : "secondary"} className="text-xs">
+                                  {slot.isActive === "true" ? "Actif" : "Inactif"}
+                                </Badge>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <Users className="w-4 h-4 text-[#1D1D1B]/60" />
-                                <span className="text-sm">
-                                  {getBookingCountForSlot(slot.id)}/{parseInt(slot.maxBookings)}
-                                </span>
-                              </div>
-                              <Badge variant={slot.isActive === "true" ? "default" : "secondary"}>
-                                {slot.isActive === "true" ? "Actif" : "Inactif"}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEditSlot(slot)}
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </Button>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="outline" size="sm">
-                                    <Trash2 className="w-4 h-4 text-red-500" />
-                                  </Button>
-                                </AlertDialogTrigger>
+                              <div className="flex items-center gap-2 sm:gap-1">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEditSlot(slot)}
+                                  className="p-2 h-8 w-8 sm:h-9 sm:w-9"
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="outline" size="sm" className="p-2 h-8 w-8 sm:h-9 sm:w-9">
+                                      <Trash2 className="w-4 h-4 text-red-500" />
+                                    </Button>
+                                  </AlertDialogTrigger>
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>Supprimer ce créneau ?</AlertDialogTitle>
@@ -696,6 +697,7 @@ export function AdminBookingManager() {
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
+                            </div>
                             </div>
                           </div>
                         </motion.div>
@@ -781,7 +783,7 @@ export function AdminBookingManager() {
                                   {slot.description}
                                 </div>
                               )}
-                              <div className="text-xs text-[#1D1D1B]/50 mt-1">
+                            <div className="text-xs text-[#1D1D1B]/50 mt-1">
                                 Valide du {slot.validFrom} {slot.validUntil && `au ${slot.validUntil}`}
                               </div>
                             </div>
@@ -841,26 +843,25 @@ export function AdminBookingManager() {
                           exit={{ opacity: 0, y: -20 }}
                           transition={{ duration: 0.3, delay: index * 0.05 }}
                         >
-                          <div className="border rounded-lg p-6">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                  <div>
-                                    <div className="font-semibold text-lg">{booking.customerName}</div>
-                                    <div className="text-sm text-[#1D1D1B]/70">{booking.customerEmail}</div>
-                                    {booking.customerPhone && (
-                                      <div className="text-sm text-[#1D1D1B]/70">{booking.customerPhone}</div>
-                                    )}
-                                  </div>
-                                  <div className="text-right">
-                                    <Badge variant={getStatusColor(booking.status)} className="mb-2">
-                                      {getStatusText(booking.status)}
-                                    </Badge>
-                                    <div className="text-sm text-[#1D1D1B]/60">
-                                      Réservé le {format(new Date(booking.createdAt), "d MMMM yyyy à HH:mm", { locale: fr })}
-                                    </div>
+                          <div className="border rounded-lg p-4 sm:p-6">
+                            <div className="flex flex-col gap-4">
+                              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                <div className="flex-1">
+                                  <div className="font-semibold text-base sm:text-lg mb-1">{booking.customerName}</div>
+                                  <div className="text-sm text-[#1D1D1B]/70 break-all">{booking.customerEmail}</div>
+                                  {booking.customerPhone && (
+                                    <div className="text-sm text-[#1D1D1B]/70">{booking.customerPhone}</div>
+                                  )}
+                                </div>
+                                <div className="flex flex-col sm:items-end gap-2">
+                                  <Badge variant={getStatusColor(booking.status)} className="text-xs self-start sm:self-auto">
+                                    {getStatusText(booking.status)}
+                                  </Badge>
+                                  <div className="text-xs sm:text-sm text-[#1D1D1B]/60">
+                                    Réservé le {format(new Date(booking.createdAt), "d MMMM yyyy à HH:mm", { locale: fr })}
                                   </div>
                                 </div>
+                              </div>
                                 {booking.notes && (
                                   <div className="mt-3 p-3 bg-gray-50 rounded text-sm">
                                     <strong>Notes :</strong> {booking.notes}
@@ -868,25 +869,27 @@ export function AdminBookingManager() {
                                 )}
                               </div>
                             </div>
-                            <div className="flex gap-2 mt-4">
+                            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                               {booking.status === "pending" && (
                                 <>
                                   <Button
                                     size="sm"
                                     onClick={() => handleUpdateBookingStatus(booking.id, "confirmed")}
-                                    className="flex items-center gap-1"
+                                    className="flex items-center gap-1 text-xs sm:text-sm py-2 px-3"
                                   >
                                     <CheckCircle className="w-4 h-4" />
-                                    Confirmer
+                                    <span className="hidden sm:inline">Confirmer</span>
+                                    <span className="sm:hidden">✓</span>
                                   </Button>
                                   <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleUpdateBookingStatus(booking.id, "cancelled")}
-                                    className="flex items-center gap-1 text-red-600 border-red-200 hover:bg-red-50"
+                                    className="flex items-center gap-1 text-red-600 border-red-200 hover:bg-red-50 text-xs sm:text-sm py-2 px-3"
                                   >
                                     <XCircle className="w-4 h-4" />
-                                    Annuler
+                                    <span className="hidden sm:inline">Annuler</span>
+                                    <span className="sm:hidden">✕</span>
                                   </Button>
                                 </>
                               )}
@@ -905,14 +908,15 @@ export function AdminBookingManager() {
                                 <Button
                                   size="sm"
                                   onClick={() => handleUpdateBookingStatus(booking.id, "confirmed")}
-                                  className="flex items-center gap-1"
+                                  className="flex items-center gap-1 text-xs sm:text-sm py-2 px-3"
                                 >
                                   <CheckCircle className="w-4 h-4" />
-                                  Reactiver
+                                  <span className="hidden sm:inline">Réactiver</span>
+                                  <span className="sm:hidden">↻</span>
                                 </Button>
                               )}
                             </div>
-                          </div>
+                          
                         </motion.div>
                       ))}
                     </AnimatePresence>
