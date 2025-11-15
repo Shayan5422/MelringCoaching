@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { DatabaseStorage } from "./db-storage.js";
+import { sendBookingConfirmationEmails } from "./email-service.js";
 
 const storage = new DatabaseStorage();
 import {
@@ -189,7 +190,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Ce créneau n'est plus disponible" });
       }
 
+      // Get slot information for email
+      let slotInfo = null;
+
+      // Try to get availability slot first
+      try {
+        slotInfo = await storage.getAvailabilitySlotById(validatedData.slotId);
+      } catch (error) {
+        // If not found, try recurring slots (this is a bit hacky but works for now)
+        try {
+          const recurringSlots = await storage.getAllRecurringSlots();
+          const recurringSlot = recurringSlots.find(slot => slot.id === validatedData.slotId);
+          if (recurringSlot) {
+            slotInfo = {
+              ...recurringSlot,
+              date: new Date().toISOString().split('T')[0], // Use today's date
+              isRecurring: true
+            };
+          }
+        } catch (recurringError) {
+          console.log("Slot information not found for email, proceeding without slot details");
+        }
+      }
+
       const booking = await storage.createBookingSlot(validatedData);
+
+      // Send confirmation emails with slot information
+      try {
+        const emailData = {
+          customerName: validatedData.customerName,
+          customerEmail: validatedData.customerEmail,
+          customerPhone: validatedData.customerPhone || undefined,
+          notes: validatedData.notes || undefined,
+          slotDescription: slotInfo?.description || "Séance de coaching",
+          slotDate: slotInfo?.date || new Date().toISOString().split('T')[0],
+          slotStartTime: slotInfo?.startTime || "Non spécifié",
+          slotEndTime: slotInfo?.endTime || "Non spécifié"
+        };
+
+        // Send emails asynchronously (don't block the response)
+        sendBookingConfirmationEmails(emailData).catch(emailError => {
+          console.error("Failed to send booking confirmation emails:", emailError);
+        });
+
+      } catch (emailError) {
+        console.error("Error preparing email data:", emailError);
+        // Don't fail the booking if email fails
+      }
+
       res.json(booking);
     } catch (error: any) {
       if (error.name === "ZodError") {

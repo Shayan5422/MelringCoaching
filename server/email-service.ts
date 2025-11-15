@@ -1,0 +1,154 @@
+import nodemailer from 'nodemailer';
+
+// Email configuration using university email credentials
+const emailConfig = {
+  host: 'smtp.univ-lille.fr',
+  port: 465,
+  secure: true, // SSL/TLS
+  auth: {
+    user: 'shayan.hashemi.etu@univ-lille.fr',
+    pass: 'Shayan.84088408'
+  }
+};
+
+// Create email transporter
+const transporter = nodemailer.createTransport(emailConfig);
+
+export interface BookingEmailData {
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  notes?: string;
+  slotDescription?: string;
+  slotDate: string;
+  slotStartTime: string;
+  slotEndTime: string;
+}
+
+// Send email to customer
+export async function sendCustomerConfirmationEmail(bookingData: BookingEmailData) {
+  try {
+    const mailOptions = {
+      from: '"Melring Coaching" <shayan.hashemi.etu@univ-lille.fr>',
+      to: bookingData.customerEmail,
+      subject: 'Confirmation de votre réservation - Melring Coaching',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #1D1D1B; margin-bottom: 10px;">Melring Coaching</h1>
+            <p style="color: #666; font-size: 16px;">Boxe - HIIT - Coaching Sportif</p>
+          </div>
+
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="color: #1D1D1B; margin-bottom: 15px;">Confirmation de réservation</h2>
+            <p style="font-size: 16px; margin-bottom: 10px;">Bonjour <strong>${bookingData.customerName}</strong>,</p>
+            <p style="font-size: 16px; margin-bottom: 15px;">Votre réservation a été confirmée avec succès !</p>
+          </div>
+
+          <div style="background-color: #e8f4f8; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #1D1D1B; margin-bottom: 15px;">Détails de votre séance</h3>
+            <div style="font-size: 16px; line-height: 1.6;">
+              <p><strong>Date :</strong> ${new Date(bookingData.slotDate).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p><strong>Heure :</strong> ${bookingData.slotStartTime} - ${bookingData.slotEndTime}</p>
+              ${bookingData.slotDescription ? `<p><strong>Type de séance :</strong> ${bookingData.slotDescription}</p>` : ''}
+              ${bookingData.customerPhone ? `<p><strong>Téléphone :</strong> ${bookingData.customerPhone}</p>` : ''}
+            </div>
+          </div>
+
+          ${bookingData.notes ? `
+          <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="color: #856404; margin-bottom: 10px;">Vos notes :</h4>
+            <p style="font-size: 16px; color: #856404;">${bookingData.notes}</p>
+          </div>
+          ` : ''}
+
+          <div style="text-align: center; margin: 30px 0;">
+            <p style="font-size: 16px; color: #666;">Nous vous attendons avec impatience !</p>
+            <p style="font-size: 16px; color: #666;">Pour toute question, n'hésitez pas à nous contacter.</p>
+          </div>
+
+          <div style="text-align: center; padding-top: 20px; border-top: 1px solid #eee;">
+            <p style="font-size: 14px; color: #999;">
+              Melring Coaching - Coaching sportif professionnel<br>
+              Contact : shayan.hashemi.etu@univ-lille.fr
+            </p>
+          </div>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log('Customer confirmation email sent successfully');
+  } catch (error) {
+    console.error('Error sending customer email:', error);
+    throw error;
+  }
+}
+
+// Send email to business owner
+export async function sendOwnerNotificationEmail(bookingData: BookingEmailData) {
+  try {
+    const mailOptions = {
+      from: '"Melring Coaching System" <shayan.hashemi.etu@univ-lille.fr>',
+      to: 'shayan.hashemi.etu@univ-lille.fr',
+      subject: 'Nouvelle réservation - Melring Coaching',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #1D1D1B; margin-bottom: 10px;">Nouvelle Réservation</h1>
+            <p style="color: #666; font-size: 16px;">Melring Coaching</p>
+          </div>
+
+          <div style="background-color: #d4edda; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+            <h3 style="color: #155724; margin-bottom: 15px;">Informations du client</h3>
+            <div style="font-size: 16px; line-height: 1.6;">
+              <p><strong>Nom :</strong> ${bookingData.customerName}</p>
+              <p><strong>Email :</strong> ${bookingData.customerEmail}</p>
+              ${bookingData.customerPhone ? `<p><strong>Téléphone :</strong> ${bookingData.customerPhone}</p>` : ''}
+            </div>
+          </div>
+
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #1D1D1B; margin-bottom: 15px;">Détails de la réservation</h3>
+            <div style="font-size: 16px; line-height: 1.6;">
+              <p><strong>Date :</strong> ${new Date(bookingData.slotDate).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p><strong>Heure :</strong> ${bookingData.slotStartTime} - ${bookingData.slotEndTime}</p>
+              ${bookingData.slotDescription ? `<p><strong>Type de séance :</strong> ${bookingData.slotDescription}</p>` : ''}
+            </div>
+          </div>
+
+          ${bookingData.notes ? `
+          <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="color: #856404; margin-bottom: 10px;">Notes du client :</h4>
+            <p style="font-size: 16px; color: #856404;">${bookingData.notes}</p>
+          </div>
+          ` : ''}
+
+          <div style="text-align: center; margin: 30px 0;">
+            <p style="font-size: 16px; color: #666;">Réservation enregistrée le ${new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+          </div>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log('Owner notification email sent successfully');
+  } catch (error) {
+    console.error('Error sending owner email:', error);
+    throw error;
+  }
+}
+
+// Send both emails for a booking
+export async function sendBookingConfirmationEmails(bookingData: BookingEmailData) {
+  try {
+    await Promise.all([
+      sendCustomerConfirmationEmail(bookingData),
+      sendOwnerNotificationEmail(bookingData)
+    ]);
+    console.log('All booking confirmation emails sent successfully');
+  } catch (error) {
+    console.error('Error sending booking emails:', error);
+    throw error;
+  }
+}

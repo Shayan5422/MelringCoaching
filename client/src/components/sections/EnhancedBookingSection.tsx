@@ -132,7 +132,7 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
     onSuccess: () => {
       toast({
         title: "Réservation confirmée !",
-        description: "Votre séance a été réservée avec succès. Nous vous enverrons un email de confirmation.",
+        description: "Votre séance a été réservée avec succès. Un email de confirmation vous a été envoyé.",
       });
       form.reset();
       setSelectedSlot(null);
