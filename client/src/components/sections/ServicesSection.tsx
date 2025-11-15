@@ -3,14 +3,19 @@ import { Flame, Heart, Users, Calendar, Briefcase, User } from "lucide-react";
 export function ServicesSection() {
   const services = [
     {
-      icon: Flame,
-      title: "HIIT & Cardio-Training",
-      description: "Des séances intenses pour brûler des calories, améliorer votre endurance et sculpter votre silhouette."
-    },
-    {
       icon: Heart,
       title: "Boxe (tous niveaux)",
       description: "Technique, puissance et coordination. Progressez à votre rythme avec un encadrement personnalisé."
+    },
+    {
+      icon: Briefcase,
+      title: "Évènements & Team-Building",
+      description: "Des expériences sur mesure pour renforcer la cohésion d'équipe et booster la motivation collective."
+    },
+    {
+      icon: Flame,
+      title: "HIIT & Cardio-Training",
+      description: "Des séances intenses pour brûler des calories, améliorer votre endurance et sculpter votre silhouette."
     },
     {
       icon: Calendar,
@@ -21,11 +26,6 @@ export function ServicesSection() {
       icon: Users,
       title: "Cours collectifs",
       description: "Entraînez-vous en petits groupes (6-12 personnes) dans une ambiance motivante et conviviale."
-    },
-    {
-      icon: Briefcase,
-      title: "Évènements & Team-Building",
-      description: "Des expériences sur mesure pour renforcer la cohésion d'équipe et booster la motivation collective."
     },
     {
       icon: User,
