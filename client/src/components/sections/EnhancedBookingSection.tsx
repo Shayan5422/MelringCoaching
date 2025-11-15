@@ -292,10 +292,11 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                 </div>
 
                 {/* Quick Date Selection */}
-                <div className="flex flex-col items-center gap-3 mt-4">
-                  <div className="flex items-center justify-center gap-2">
+                <div className="flex flex-col items-center gap-4 mt-4">
+                  {/* Date Selection */}
+                  <div className="flex flex-col items-center gap-2 w-full px-4">
                     <span className="text-sm text-[#1D1D1B]/60">Accès rapide:</span>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap justify-center gap-2">
                       {["Aujourd'hui", "Demain", "Après-demain"].map((label, index) => {
                         const targetDate = addDays(new Date(), index);
                         return (
@@ -304,7 +305,7 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                             variant="outline"
                             size="sm"
                             onClick={() => setSelectedDate(targetDate)}
-                            className={`text-xs px-3 py-1 ${
+                            className={`text-xs px-3 py-1 min-w-0 flex-shrink-0 ${
                               format(selectedDate, "yyyy-MM-dd") === format(targetDate, "yyyy-MM-dd")
                                 ? "bg-primary text-primary-foreground border-primary"
                                 : "border-[#1D1D1B]/20 hover:border-primary"
@@ -318,14 +319,14 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                   </div>
 
                   {/* Course Type Filters */}
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex flex-col items-center gap-2 w-full px-4">
                     <span className="text-sm text-[#1D1D1B]/60">Type de séance:</span>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap justify-center gap-2 max-w-full">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setSelectedCourseType("")}
-                        className={`text-xs px-3 py-1 ${
+                        className={`text-xs px-3 py-1 min-w-0 flex-shrink-0 ${
                           selectedCourseType === ""
                             ? "bg-primary text-primary-foreground border-primary"
                             : "border-[#1D1D1B]/20 hover:border-primary"
@@ -339,14 +340,19 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                           variant="outline"
                           size="sm"
                           onClick={() => setSelectedCourseType(courseType)}
-                          className={`text-xs px-3 py-1 flex items-center gap-1 ${
+                          className={`text-xs px-2 py-1 min-w-0 flex-shrink-0 flex items-center gap-1 ${
                             selectedCourseType === courseType
                               ? "bg-primary text-primary-foreground border-primary"
                               : "border-[#1D1D1B]/20 hover:border-primary"
                           }`}
                         >
-                          <div className={`w-2 h-2 rounded-full ${getCourseColor(courseType)}`}></div>
-                          {courseType}
+                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getCourseColor(courseType)}`}></div>
+                          <span className="hidden sm:inline">{courseType}</span>
+                          <span className="sm:hidden">
+                            {courseType.includes("Open") ? "Open" :
+                             courseType.includes("Femme") ? "F" :
+                             courseType.includes("Mixte") ? "M" : courseType}
+                          </span>
                         </Button>
                       ))}
                     </div>
@@ -409,26 +415,33 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
               ) : (
                 <>
                   {/* Course Legend */}
-                  <div className="mb-6 flex flex-wrap items-center justify-center gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-                      <span className="text-[#1D1D1B]/70">Open Ring</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-pink-500"></div>
-                      <span className="text-[#1D1D1B]/70">Boxe Femme</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-purple-500"></div>
-                      <span className="text-[#1D1D1B]/70">Boxe Mixte</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-orange-500"></div>
-                      <span className="text-[#1D1D1B]/70">HIIT Mixte</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                      <span className="text-[#1D1D1B]/70">HIIT Femme</span>
+                  <div className="mb-6">
+                    <div className="flex flex-wrap items-center justify-center gap-3 text-xs sm:text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-blue-500 flex-shrink-0"></div>
+                        <span className="text-[#1D1D1B]/70 hidden sm:inline">Open Ring</span>
+                        <span className="text-[#1D1D1B]/70 sm:hidden">Open</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-pink-500 flex-shrink-0"></div>
+                        <span className="text-[#1D1D1B]/70 hidden sm:inline">Boxe Femme</span>
+                        <span className="text-[#1D1D1B]/70 sm:hidden">Boxe F</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-purple-500 flex-shrink-0"></div>
+                        <span className="text-[#1D1D1B]/70 hidden sm:inline">Boxe Mixte</span>
+                        <span className="text-[#1D1D1B]/70 sm:hidden">Boxe M</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-orange-500 flex-shrink-0"></div>
+                        <span className="text-[#1D1D1B]/70 hidden sm:inline">HIIT Mixte</span>
+                        <span className="text-[#1D1D1B]/70 sm:hidden">HIIT M</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-red-500 flex-shrink-0"></div>
+                        <span className="text-[#1D1D1B]/70 hidden sm:inline">HIIT Femme</span>
+                        <span className="text-[#1D1D1B]/70 sm:hidden">HIIT F</span>
+                      </div>
                     </div>
                   </div>
 
@@ -448,48 +461,72 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                           : "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
                       }`}>
                         <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-2">
                                 {slot.description && (
                                   <Badge
                                     variant={getCourseVariant(slot.description)}
-                                    className="text-xs font-medium"
+                                    className="text-xs font-medium truncate"
                                   >
-                                    {slot.description}
+                                    <span className="hidden sm:inline">{slot.description}</span>
+                                    <span className="sm:hidden">
+                                      {slot.description.includes("Open") ? "Open" :
+                                       slot.description.includes("Femme") ? "F" :
+                                       slot.description.includes("Mixte") ? "M" : slot.description}
+                                    </span>
                                   </Badge>
                                 )}
                               </div>
                               <div className="flex items-center gap-2">
-                                <Clock className="w-5 h-5 text-primary" />
-                                <CardTitle className="font-display text-lg">
+                                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                                <CardTitle className="font-display text-base sm:text-lg truncate">
                                   {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
                                 </CardTitle>
                               </div>
                             </div>
-                            <div className="flex flex-col items-end gap-2">
-                              <Badge variant={getStatusColor(slot.availableSpots, slot.totalSpots)}>
-                                {getStatusText(slot.availableSpots, slot.totalSpots)}
+                            <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 sm:gap-2">
+                              <Badge
+                                variant={getStatusColor(slot.availableSpots, slot.totalSpots)}
+                                className="text-xs whitespace-nowrap"
+                              >
+                                <span className="hidden sm:inline">{getStatusText(slot.availableSpots, slot.totalSpots)}</span>
+                                <span className="sm:hidden">
+                                  {slot.availableSpots === 0 ? "Complet" :
+                                   slot.availableSpots === slot.totalSpots ? "Dispo" :
+                                   `${slot.availableSpots}/${slot.totalSpots}`}
+                                </span>
                               </Badge>
                               {slot.description && (
-                                <div className={`w-3 h-3 rounded-full ${getCourseColor(slot.description)}`}></div>
+                                <div className={`w-3 h-3 rounded-full ${getCourseColor(slot.description)} flex-shrink-0`}></div>
                               )}
                             </div>
                           </div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="pt-0">
                           <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-sm text-[#1D1D1B]/70">
-                              <User className="w-4 h-4" />
-                              <span>{slot.availableSpots} place(s) sur {slot.totalSpots}</span>
+                            <div className="flex items-center gap-2 text-xs sm:text-sm text-[#1D1D1B]/70">
+                              <User className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                              <span className="truncate">
+                                {slot.availableSpots} place(s) sur {slot.totalSpots}
+                              </span>
                             </div>
                             <Button
-                              className="w-full"
+                              className="w-full text-xs sm:text-sm h-8 sm:h-10"
                               disabled={!slot.isAvailable}
                               onClick={() => handleSlotSelect(slot)}
                               variant={slot.isAvailable ? "default" : "secondary"}
                             >
-                              {slot.isAvailable ? "Réserver ce créneau" : "Indisponible"}
+                              {slot.isAvailable ? (
+                                <span className="hidden sm:inline">Réserver ce créneau</span>
+                              ) : (
+                                <span className="hidden sm:inline">Indisponible</span>
+                              )}
+                              {slot.isAvailable ? (
+                                <span className="sm:hidden">Réserver</span>
+                              ) : (
+                                <span className="sm:hidden">Indisponible</span>
+                              )}
                             </Button>
                           </div>
                         </CardContent>
@@ -532,15 +569,15 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                           name="customerName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="flex items-center gap-2">
-                                <User className="w-4 h-4" />
+                              <FormLabel className="flex items-center gap-2 text-sm sm:text-base">
+                                <User className="w-4 h-4 flex-shrink-0" />
                                 Nom complet
                               </FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
                                   placeholder="Jean Dupont"
-                                  className="font-body"
+                                  className="font-body text-sm sm:text-base"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -553,8 +590,8 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                           name="customerEmail"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="flex items-center gap-2">
-                                <Mail className="w-4 h-4" />
+                              <FormLabel className="flex items-center gap-2 text-sm sm:text-base">
+                                <Mail className="w-4 h-4 flex-shrink-0" />
                                 Email
                               </FormLabel>
                               <FormControl>
@@ -562,7 +599,7 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                                   {...field}
                                   type="email"
                                   placeholder="jean.dupont@exemple.com"
-                                  className="font-body"
+                                  className="font-body text-sm sm:text-base"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -576,8 +613,8 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                         name="customerPhone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="flex items-center gap-2">
-                              <Phone className="w-4 h-4" />
+                            <FormLabel className="flex items-center gap-2 text-sm sm:text-base">
+                              <Phone className="w-4 h-4 flex-shrink-0" />
                               Téléphone (optionnel)
                             </FormLabel>
                             <FormControl>
@@ -585,7 +622,7 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                                 {...field}
                                 type="tel"
                                 placeholder="+33 6 12 34 56 78"
-                                className="font-body"
+                                className="font-body text-sm sm:text-base"
                               />
                             </FormControl>
                             <FormMessage />
@@ -598,12 +635,12 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                         name="notes"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Notes ou demandes particulières</FormLabel>
+                            <FormLabel className="text-sm sm:text-base">Notes ou demandes particulières</FormLabel>
                             <FormControl>
                               <Textarea
                                 {...field}
                                 placeholder="N'hésitez pas à nous faire part de vos attentes ou questions..."
-                                className="font-body resize-none"
+                                className="font-body text-sm sm:text-base resize-none"
                                 rows={3}
                               />
                             </FormControl>
@@ -612,7 +649,7 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                         )}
                       />
 
-                      <div className="flex gap-4 pt-4">
+                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
                         <Button
                           type="button"
                           variant="outline"
@@ -620,17 +657,27 @@ export function EnhancedBookingSection({ date = format(new Date(), "yyyy-MM-dd")
                             setShowBookingForm(false);
                             setSelectedSlot(null);
                           }}
-                          className="flex-1"
+                          className="flex-1 text-sm sm:text-base h-10 sm:h-12"
                         >
-                          Retour aux créneaux
+                          <span className="hidden sm:inline">Retour aux créneaux</span>
+                          <span className="sm:hidden">Retour</span>
                         </Button>
                         <Button
                           type="submit"
                           size="lg"
-                          className="flex-1 bg-primary hover:bg-primary/90"
+                          className="flex-1 bg-primary hover:bg-primary/90 text-sm sm:text-base h-10 sm:h-12"
                           disabled={bookingMutation.isPending}
                         >
-                          {bookingMutation.isPending ? "Réservation en cours..." : "Confirmer la réservation"}
+                          {bookingMutation.isPending ? (
+                            <span className="hidden sm:inline">Réservation en cours...</span>
+                          ) : (
+                            <span className="hidden sm:inline">Confirmer la réservation</span>
+                          )}
+                          {bookingMutation.isPending ? (
+                            <span className="sm:hidden">En cours...</span>
+                          ) : (
+                            <span className="sm:hidden">Confirmer</span>
+                          )}
                         </Button>
                       </div>
                     </form>
