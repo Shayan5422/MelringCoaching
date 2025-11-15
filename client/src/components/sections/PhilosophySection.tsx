@@ -14,7 +14,7 @@ export function PhilosophySection() {
     },
     {
       icon: Award,
-      title: "Engagement",
+      title: "Élévation",
       description: "S'investir pleinement dans votre transformation avec discipline, passion et persévérance."
     }
   ];
