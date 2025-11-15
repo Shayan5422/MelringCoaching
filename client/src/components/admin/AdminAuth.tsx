@@ -24,7 +24,7 @@ export function AdminAuth({ onAuthenticated }: AdminAuthProps) {
       sessionStorage.setItem("adminAuthenticated", "true");
       onAuthenticated();
     } else {
-      setError("رمز عبور اشتباه است");
+      setError("Mot de passe incorrect");
       setIsSubmitting(false);
     }
   };
@@ -37,17 +37,17 @@ export function AdminAuth({ onAuthenticated }: AdminAuthProps) {
             <Shield className="w-6 h-6 text-primary" />
           </div>
           <CardTitle className="text-2xl font-bold text-white">
-            ورود به پنل مدیریت
+            Accès au panneau d'administration
           </CardTitle>
           <CardDescription className="text-gray-400">
-            لطفاً رمز عبور را برای دسترسی به پنل مدیریت وارد کنید
+            Veuillez entrer le mot de passe pour accéder au panneau d'administration
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium text-gray-300">
-                رمز عبور
+                Mot de passe
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -57,7 +57,7 @@ export function AdminAuth({ onAuthenticated }: AdminAuthProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="bg-gray-700/50 border-gray-600 text-white pl-10 pr-4 focus:border-primary transition-colors"
-                  placeholder="رمز عبور را وارد کنید"
+                  placeholder="Entrez le mot de passe"
                   required
                 />
               </div>
@@ -72,7 +72,7 @@ export function AdminAuth({ onAuthenticated }: AdminAuthProps) {
               className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 transition-colors"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "در حال بررسی..." : "ورود"}
+              {isSubmitting ? "Vérification..." : "Connexion"}
             </Button>
           </form>
         </CardContent>
