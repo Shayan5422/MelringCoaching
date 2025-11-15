@@ -13,6 +13,11 @@ export function ServicesSection() {
       description: "Des expériences sur mesure pour renforcer la cohésion d'équipe et booster la motivation collective."
     },
     {
+      icon: User,
+      title: "Coaching individuel",
+      description: "Un accompagnement 100% personnalisé pour atteindre vos objectifs spécifiques rapidement."
+    },
+    {
       icon: Flame,
       title: "HIIT & Cardio-Training",
       description: "Des séances intenses pour brûler des calories, améliorer votre endurance et sculpter votre silhouette."
@@ -26,12 +31,8 @@ export function ServicesSection() {
       icon: Users,
       title: "Cours collectifs",
       description: "Entraînez-vous en petits groupes (6-12 personnes) dans une ambiance motivante et conviviale."
-    },
-    {
-      icon: User,
-      title: "Coaching individuel",
-      description: "Un accompagnement 100% personnalisé pour atteindre vos objectifs spécifiques rapidement."
     }
+    
   ];
 
   return (
