@@ -34,7 +34,7 @@ export default function AdminPage() {
             <h1 className="text-xl font-bold text-white">Panneau d'administration MELRING</h1>
             <button
               onClick={handleLogout}
-              className="text-gray-400 hover:text-white px-3 py-1 rounded-md text-sm border border-gray-600 hover:border-gray-500 transition-colors"
+              className="text-gray-400 hover:text-yellow-400 px-3 py-1 rounded-md text-sm border border-gray-600 hover:border-yellow-600 transition-colors"
             >
               Déconnexion
             </button>
