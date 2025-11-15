@@ -156,7 +156,7 @@ export function ContactSection() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-display font-bold text-base py-6 rounded-sm shadow-lg transition-all duration-300 hover:scale-105"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-display font-bold text-sm sm:text-base py-4 sm:py-6 rounded-sm shadow-lg transition-all duration-300 hover:scale-105"
                     disabled={contactMutation.isPending}
                     data-testid="button-submit-contact"
                   >
